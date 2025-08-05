@@ -1,6 +1,7 @@
 package adeo.leroymerlin.cdp;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -25,10 +26,10 @@ public class EventService {
     public List<Event> getFilteredEvents(String query) {
         List<Event> events = eventRepository.findAll();
         // Filter the events list in pure JAVA here
-        return events.stream()
+        List<Event> filteredEvents = events.stream()
                 .filter(event -> hasMatchingMember(event, query))
                 .collect(Collectors.toList());
-
+        return addCountsToEvents(filteredEvents);
     }
 
     private boolean hasMatchingMember(Event event, String query) {
@@ -43,6 +44,46 @@ public class EventService {
                 .filter(name -> name != null)
                 .anyMatch(name -> name.toLowerCase()
                 .contains(query.toLowerCase()));
+    }
+
+    private List<Event> addCountsToEvents(List<Event> events) {
+        return events.stream()
+                .map(event -> {
+
+                    Event eventWithCount = new Event();
+                    eventWithCount.setId(event.getId());
+                    eventWithCount.setImgUrl(event.getImgUrl());
+                    eventWithCount.setNbStars(event.getNbStars());
+                    eventWithCount.setComment(event.getComment());
+
+                    if (event.getBands() != null) {
+                        int bandCount = event.getBands().size();
+                        eventWithCount.setTitle(event.getTitle() + " [" + bandCount + "]");
+
+                        Set<Band> bandsWithCounts = event.getBands().stream()
+                                .map(band -> {
+                                    Band bandWithCount = new Band();
+                                    bandWithCount.setMembers(band.getMembers());
+
+                                    if (band.getMembers() != null) {
+                                        int memberCount = band.getMembers().size();
+                                        bandWithCount.setName(band.getName() + " [" + memberCount + "]");
+                                    } else {
+                                        bandWithCount.setName(band.getName() + " [0]");
+                                    }
+
+                                    return bandWithCount;
+                                })
+                                .collect(Collectors.toSet());
+
+                        eventWithCount.setBands(bandsWithCounts);
+                    } else {
+                        eventWithCount.setTitle(event.getTitle() + " [0]");
+                    }
+
+                    return eventWithCount;
+                })
+                .collect(Collectors.toList());
     }
 
     // Update the event with the given ID
