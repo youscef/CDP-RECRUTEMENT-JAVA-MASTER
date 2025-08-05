@@ -25,8 +25,29 @@
                 <h1><i class="fa fa-event" aria-hidden="true"></i> My Event</h1>
             </div>
 
+
             <div ng-controller="EventsController as events" ng-cloak class="ng-cloak">
+
+                <div style="margin-bottom: 20px;">
+                    <input type="text" 
+                           class="form-control" 
+                           placeholder="Search by mamber name (ex: Wa, Frankie...)"
+                           ng-model="events.searchQuery">
+                    <button class="btn btn-primary" 
+                            style="margin-top: 10px;" 
+                            ng-click="events.search()">
+                        Rechercher
+                    </button>
+                    <button class="btn btn-default" 
+                            style="margin-top: 10px;" 
+                            ng-click="events.showAll()">
+                        Tout afficher
+                    </button>
+                </div>
+
+
                 <div class="" ng-hide="events.events.length">Aucun Event trouvé</div>
+
 
                 <div class="media" ng-repeat="event in events.events track by event.id">
                     <div class="media-left">
@@ -54,6 +75,7 @@
         </div>
     </div>
 </div>
+
 <script src="/webjars/angularjs/1.5.8/angular.min.js" type="text/javascript"></script>
 <script src="/webjars/angular-input-stars/1.6.3/angular-input-stars.js" type="text/javascript"></script>
 <script src="app.js" type="text/javascript"></script>
