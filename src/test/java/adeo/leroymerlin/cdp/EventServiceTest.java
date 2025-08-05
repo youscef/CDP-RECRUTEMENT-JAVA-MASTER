@@ -1,6 +1,9 @@
 package adeo.leroymerlin.cdp;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
@@ -81,4 +84,65 @@ class EventServiceTest {
         assertEquals("Old comment", existingEvent.getComment());
         verify(eventRepository).save(existingEvent);
     }
+
+    @Test
+void getFilteredEvents_ShouldReturnMatchingEvents_WhenMemberNameMatches() {
+    // ARRANGE - Create test data
+    Member memberWalsh = new Member();
+    memberWalsh.setName("Queen Anika Walsh");
+    
+    Member memberOther = new Member();
+    memberOther.setName("John Doe");
+    
+    Band metallica = new Band();
+    metallica.setName("Metallica");
+    metallica.setMembers(Set.of(memberWalsh));
+    
+    Band otherBand = new Band();
+    otherBand.setName("Other Band");
+    otherBand.setMembers(Set.of(memberOther));
+    
+    Event eventWithWalsh = new Event();
+    eventWithWalsh.setTitle("GrasPop Metal Meeting");
+    eventWithWalsh.setBands(Set.of(metallica));
+    
+    Event eventWithoutWalsh = new Event();
+    eventWithoutWalsh.setTitle("Other Event");
+    eventWithoutWalsh.setBands(Set.of(otherBand));
+    
+    List<Event> allEvents = Arrays.asList(eventWithWalsh, eventWithoutWalsh);
+    
+    // Mock the repository
+    when(eventRepository.findAll()).thenReturn(allEvents);
+    
+    // ACT - Call the filtering function
+    List<Event> result = eventService.getFilteredEvents("Wa");
+    
+    // ASSERT - Check the results
+    assertEquals(1, result.size(), "Should return exactly 1 event");
+    assertEquals("GrasPop Metal Meeting", result.get(0).getTitle(),
+                "Should return the event with Walsh");
+}
+
+@Test
+void getFilteredEvents_ShouldReturnEmpty_WhenNoMemberMatches() {
+    // ARRANGE - Create test data
+    Member member = new Member();
+    member.setName("John Doe");
+    
+    Band band = new Band();
+    band.setMembers(Set.of(member));
+    
+    Event event = new Event();
+    event.setTitle("Test Event");
+    event.setBands(Set.of(band));
+    
+    when(eventRepository.findAll()).thenReturn(List.of(event));
+    
+    // ACT - Call the filtering function
+    List<Event> result = eventService.getFilteredEvents("xyz");
+    
+    // ASSERT - Should return no results
+    assertEquals(0, result.size(), "Should return no event");
+}
 }
