@@ -1,8 +1,8 @@
 package adeo.leroymerlin.cdp;
 
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class EventService {
@@ -27,4 +27,21 @@ public class EventService {
 
         return events;
     }
+
+    // Update the event with the given ID
+    public void updateEvent(Long id, Event eventUpdate) {
+        Event existingEvent = eventRepository.findById(id).orElse(null);
+        if (existingEvent != null) {
+            // ONLY update the fields we care about
+            if (eventUpdate.getNbStars() != null) {
+                existingEvent.setNbStars(eventUpdate.getNbStars());
+            }
+            if (eventUpdate.getComment() != null) {
+                existingEvent.setComment(eventUpdate.getComment());
+            }
+
+            eventRepository.save(existingEvent);
+        }
+    }
+
 }
